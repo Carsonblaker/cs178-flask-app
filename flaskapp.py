@@ -59,6 +59,10 @@ def display_users():
     users_list = (('John','Doe','Comedy'),('Jane', 'Doe','Drama'))
     return render_template('display_users.html', users = users_list)
 
+@app.route('/display-exercises')
+def display_exercises():
+    exercises = getExercises()  # function you'll add to dbCode.py
+    return render_template('display_exercises.html', exercises=exercises)
 
 # these two lines of code should always be the last in the file
 if __name__ == '__main__':

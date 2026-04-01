@@ -1,0 +1,25 @@
+{% extends 'home.html' %}
+{% block content %}
+<h2>Exercises</h2>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Muscle Group</th>
+        <th>Equipment</th>
+    </tr>
+    {% for exercise in exercises %}
+<tr>
+    <td>{{ exercise['exercise_id'] }}</td>
+    <td>{{ exercise['name'] }}</td>
+    <td>{{ exercise['muscle_group'] }}</td>
+    <td>{{ exercise['equipment'] }}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
+```
+
+Then visit:
+```
+http://your-ec2-public-ip:8080/display-exercises

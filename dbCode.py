@@ -22,3 +22,6 @@ def execute_query(query, args=()):
     rows = cur.fetchall()
     cur.close()
     return rows
+
+def getExercises():
+    return execute_query("SELECT exercise_id, name, muscle_group, equipment FROM exercise")
