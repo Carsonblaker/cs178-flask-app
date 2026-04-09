@@ -1,15 +1,13 @@
-# [Your Project Name Here]
+# Workout Tracker
 
 **CS178: Cloud and Database Systems — Project #1**
-**Author:** [Your Name]
-**GitHub:** [your-username]
-
+**Author:** Carson Blaker
+**GitHub:** Carsonblaker
 ---
 
 ## Overview
 
-<!-- Describe your project in 2-4 sentences. What does it do? Who is it for? What problem does it solve? --
-My project is to update 
+This project is a workout tracking web application built with Flask. It allows users to browse a library of exercises stored in a MySQL database, and log their personal workout sessions using DynamoDB. The app is designed for anyone who wants to track their gym activity and review their workout history over time.
 
 ---
 
@@ -17,8 +15,8 @@ My project is to update
 
 - **Flask** — Python web framework
 - **AWS EC2** — hosts the running Flask application
-- **AWS RDS (MySQL)** — relational database for [describe what you stored]
-- **AWS DynamoDB** — non-relational database for [describe what you stored]
+- **AWS RDS (MySQL)** — relational database storing the exercise library (exercises, sets, and reps)
+- **AWS DynamoDB** — non-relational database storing personal workout session logs
 - **GitHub Actions** — auto-deploys code from GitHub to EC2 on push
 
 ---
@@ -26,13 +24,17 @@ My project is to update
 ## Project Structure
 
 ```
-ProjectOne/
+cs178-flask-app/
 ├── flaskapp.py          # Main Flask application — routes and app logic
-├── dbCode.py            # Database helper functions (MySQL connection + queries)
-├── creds_sample.py      # Sample credentials file (see Credential Setup below)
+├── dbCode.py            # Database helper functions (MySQL + DynamoDB)
+├── creds.py      # Sample credentials file (see Credential Setup below)
 ├── templates/
-│   ├── home.html        # Landing page
-│   ├── [other].html     # Add descriptions for your other templates
+│   ├── home.html           # Landing page
+│   ├── display_exercises.html  # Shows exercise library from MySQL
+│   ├── log_workout.html    # Form to log a new workout session (DynamoDB)
+│   ├── view_logs.html      # View, edit, and delete workout logs (DynamoDB)
+    ├── display_users.html # Creates a way to create the user for the exercise
+│   └── edit_log.html       # Edit an existing workout log entry
 ├── .gitignore           # Excludes creds.py and other sensitive files
 └── README.md
 ```
@@ -44,8 +46,8 @@ ProjectOne/
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/your-username/cs178-flask-app.git
+   cd cs178-flask-app
    ```
 
 2. Install dependencies:
@@ -89,7 +91,8 @@ Create a file called `creds.py` in the project root with the following format (s
 host = "your-rds-endpoint"
 user = "admin"
 password = "your-password"
-db = "your-database-name"
+db = "workout_tracker"
+region = "us-east-1"
 ```
 
 ---
@@ -98,42 +101,41 @@ db = "your-database-name"
 
 ### SQL (MySQL on RDS)
 
-<!-- Briefly describe your relational database schema. What tables do you have? What are the key relationships? -->
+The relational database stores a library of exercises and workout performance data across three tables:
 
-**Example:**
+- `exercise` — stores each exercise (e.g. Bench Press, Squat); primary key is `exercise_id`
+- `workout_set` — stores each set performed for an exercise (weight, set number, timestamp); foreign key links to `exercise`
+- `rep` — stores individual reps within a set including a form rating; foreign key links to `workout_set`
 
-- `[TableName]` — stores [description]; primary key is `[key]`
-- `[TableName]` — stores [description]; foreign key links to `[other table]`
-
-The JOIN query used in this project: <!-- describe it in plain English -->
+The JOIN query used in this project joins all three tables (`exercise → workout_set → rep`) to produce a full workout log showing each exercise name, set number, weight used, total reps performed, and average form score.
 
 ### DynamoDB
 
-<!-- Describe your DynamoDB table. What is the partition key? What attributes does each item have? How does it connect to the rest of the app? -->
-
-- **Table name:** `[your-table-name]`
-- **Partition key:** `[key-name]`
-- **Used for:** [description]
+- **Table name:** `workout_log`
+- **Partition key:** `username` (String)
+- **Sort key:** `log_date` (String, format: YYYY-MM-DD)
+- **Other attributes:** `exercises_done`, `notes`
+- **Used for:** storing free-form personal workout session logs per user, allowing users to record what they did on a given day and add notes about the session
 
 ---
 
 ## CRUD Operations
 
-| Operation | Route      | Description    |
-| --------- | ---------- | -------------- |
-| Create    | `/[route]` | [what it does] |
-| Read      | `/[route]` | [what it does] |
-| Update    | `/[route]` | [what it does] |
-| Delete    | `/[route]` | [what it does] |
+| Operation | Route           | Description                                              |
+| --------- | --------------- | -------------------------------------------------------- |
+| Create    | `/log-workout`  | Logs a new workout session entry to DynamoDB             |
+| Read      | `/view-logs`    | Looks up and displays all workout logs for a username    |
+| Update    | `/edit-log`     | Edits the exercises and notes on an existing log entry   |
+| Delete    | `/delete-log`   | Deletes a workout log entry by username and date         |
 
 ---
 
 ## Challenges and Insights
 
-<!-- What was the hardest part? What did you learn? Any interesting design decisions? -->
+One of the trickier parts of this project was connecting the Flask app to both a relational and non-relational database at the same time and keeping that logic clean. Separating all database functions into `dbCode.py` made this much more manageable. Setting up the GitHub Actions auto-deploy pipeline was also a learning curve, but once it was working it made iterating on the project much faster — every `git push` automatically updated the live app on EC2.
 
 ---
 
 ## AI Assistance
 
-<!-- List any AI tools you used (e.g., ChatGPT) and briefly describe what you used them for. Per course policy, AI use is allowed but must be cited in code comments and noted here. -->
+Claude was used as a debugging and troubleshooting assistant throughout this project. When errors came up such as issues with DynamoDB connections, Flask route behavior, and database integration. Claude was asked to help identify the problem and explain what was going wrong. 
